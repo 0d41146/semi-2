@@ -1,0 +1,60 @@
+# 第2回勉強会 
+RISC-Vエコシステムのビルドと使用方法
+include::./docs-resources/global-config.adoc[]
+
+## RISC-V ISA Specifications
+https://lf-riscv.atlassian.net/wiki/spaces/HOME/pages/16154769/RISC-V+Technical+Specifications
+
+RISC-Vの仕様書です.
+年1回ぐらい更新があります.
+Volume IにRISC-Vの基礎がすべて書いてあります.
+全部読む必要はないと思いますが，
+`2. RV32I Base Integer Instruction Set, Version 2.1`
+ぐらいは目を通しておくとよいかもしれません.
+
+RISC-VはRV32I, RV32E, RV64E, RV64Iの中から最低1つ選ぶ必要があります.
+通常多くの人はRV32IかRV64Iを選択します.
+Eを使ったプロセッサはあまり主流ではないと思います.
+
+この基本整数命令セットに好きな拡張命令を追加して育てられるようにRISC-Vは設計されています.
+例えばMは乗算/除算命令を表しますが，これを追加するとプロセッサはRV32IMに進化します.
+よく使うのはRV32I, M, A, Cです.
+
+ABIは（）
+通常 ilp32` を使います.
+これはintが32bit longが32bit pointerが32bitになります.
+`lp64` もあり，これはintが32bit longが64bit pointerが64bitになります.
+研究室のプロセッサは32ビットなので，ilp32じゃないと動きません.
+
+
+## [RISC-V GNU Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain)
+とにもかくにも，コンパイラがないと始まりません.
+これがRISC-Vのクロスコンパイラになります.
+コンパイルする前に，使いたい拡張命令を選択できます.
+この研究室では基本的には `RV32IM` なので，次のコマンドになるかと思います.
+デフォルトだと `RV64GC` になっています.
+これはRV32IMのスーパーセットなので，`--march=rv32im --mabi=ilp32`
+というオプションでRV32IMようにコンパイルできます.
+
+## [Verilator](https://github.com/verilator/verilator)
+Verilogのシミュレーションはこれでやりましょう.
+Verilatorです.
+aptでも落とせますが，24.04以前のバージョンだと古いものが落とされるので，ビルドしたほうがいいです.
+使い方はこんな感じです.
+
+
+## [RISC-V Tests](https://github.com/riscv-software-src/riscv-tests)
+RISC-Vの検証用のテストベンチ集です.
+自分の作ったプロセッサがRISC-Vの仕様を満たしているかで使います.
+めちゃくちゃ重要です.
+
+## [Coremark](https://github.com/eembc/coremark)
+自分の設計したプロセッサの性能を確かめたくなったらまずはCoremarkです.
+プロセッサの性能を測定することができまる.
+
+## embedded-bench
+タスク別のプロセッサの性能を調査するベンチマークです.
+
+## Spike
+RISC-Vのシミュレータです.
+
