@@ -1,21 +1,34 @@
 module top;
-    reg clk = 1'b1; initial forever #5 clk = ~clk;
-    reg [63:0] cc = 0;
-    reg done = 0;
-    always @(posedge clk) if (!done) cc <= cc + 1;
+    reg clk = 1; initial forever #5 clk = ~clk; // 100MHz clock
+    reg [63:0] cc = 0; always @(posedge clk) cc <= cc+1; // clock cycle counter
 
-    main main (
-        .clk_i(clk),
-        .rx_i(1'b1), // No RX input for simulation
-        .tx_o()      // TX output not used in this simulation
-    );
-
-    always @(posedge clk) begin
-        if (cc == 300) done <= 1;
-        if (done) begin
-            $display("Simulation finished at cycle %03d", cc);
-            $finish;
+    string hex_file;
+    initial begin
+        if ($value$plusargs("hex_file=%s", hex_file)) begin
+            $display("Loading hex file: %s", hex_file);
+            $readmemh(hex_file, top.dut.ram);
+        end else begin
+            $display("No hex file specified, using default values.");
         end
     end
 
+    initial begin
+        $dumpfile("top.vcd");
+        $dumpvars(0, top);
+    end
+
+    reg done = 0;
+    always @(posedge clk) begin
+        if (top.dut.dbus_en == 4'b1111 && top.dut.dbus_write_addr == 32'h40008000) begin
+            if (top.dut.dbus_write_data == 777) $finish;
+            else $fatal;
+        end
+        else if (cc == 1000) $fatal;
+    end
+
+    main dut(
+        .clk_i(clk),
+        .rx_i(1'b1),
+        .tx_o()
+    );
 endmodule

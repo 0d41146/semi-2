@@ -3,7 +3,8 @@ module rv32i (
     output wire [31:0] ibus_addr_o,
     input wire [31:0] ibus_data_i,
     output wire [3:0] dbus_en_o,
-    output wire [31:0] dbus_addr_o,
+    output wire [31:0] dbus_write_addr_o,
+    output wire [31:0] dbus_read_addr_o,
     output wire [31:0] dbus_write_data_o,
     input wire [31:0] dbus_read_data_i
 );
@@ -32,18 +33,19 @@ module rv32i (
 
     wire [31:0] dbus_read_data = dbus_read_data_i;
     assign dbus_en_o = dbus_en;
-    assign dbus_addr_o = xreg[rs1] + i_imm;
+    assign dbus_write_addr_o = xreg[rs1] + s_imm;
+    assign dbus_read_addr_o = xreg[rs1] + i_imm;
     assign dbus_write_data_o = dbus_write_data;
 
     always @(posedge clk_i) begin
         pc <= npc;
-        if (xreg_en) xreg[rd] <= xreg_write_data;
+        if (xreg_en && rd != 0) xreg[rd] <= xreg_write_data;
     end
 
     reg [31:0] npc;
     reg xreg_en;
     reg [31:0] xreg_write_data;
-    reg dbus_en;
+    reg [3:0] dbus_en;
     reg [31:0] dbus_write_data;
     `include "riscv.vh"
     always @(*) begin
@@ -78,7 +80,7 @@ module rv32i (
             OR       :begin xreg_en=1; xreg_write_data = xreg[rs1] | xreg[rs2]; end
             ORI      :begin xreg_en=1; xreg_write_data = xreg[rs1] | i_imm; end
             SB       :begin dbus_en=1; dbus_write_data = xreg[rs2][7:0]; end
-            SH       :begin dbus_en=1; dbus_write_data = xreg[rs2][15:0]; end
+            SH       :begin dbus_en=3; dbus_write_data = xreg[rs2][15:0]; end
             SLL      :begin xreg_en=1; xreg_write_data = xreg[rs1] << xreg[rs2][4:0]; end
             SLLI     :begin xreg_en=1; xreg_write_data = xreg[rs1] << i_imm[4:0]; end
             SLT      :begin xreg_en=1; xreg_write_data = ($signed(xreg[rs1]) < $signed(xreg[rs2])); end
@@ -90,7 +92,7 @@ module rv32i (
             SRL      :begin xreg_en=1; xreg_write_data = xreg[rs1] >> xreg[rs2][4:0]; end
             SRLI     :begin xreg_en=1; xreg_write_data = xreg[rs1] >> i_imm[4:0]; end
             SUB      :begin xreg_en=1; xreg_write_data = xreg[rs1] - xreg[rs2]; end
-            SW       :begin dbus_en=1; dbus_write_data = xreg[rs2]; end
+            SW       :begin dbus_en=15;dbus_write_data = xreg[rs2]; end
             XOR      :begin xreg_en=1; xreg_write_data = xreg[rs1] ^ xreg[rs2]; end
             XORI     :begin xreg_en=1; xreg_write_data = xreg[rs1] ^ i_imm; end
             default   :begin $display("Unknown instruction: %h", insn); end
