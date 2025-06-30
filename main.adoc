@@ -58,3 +58,7 @@ RISC-Vの検証用のテストベンチ集です.
 ## Spike
 RISC-Vのシミュレータです.
 
+
+## RISC-V Opcodes
+https://github.com/riscv/riscv-opcodes
+
