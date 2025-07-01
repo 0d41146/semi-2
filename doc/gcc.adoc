@@ -1,0 +1,77 @@
+== RISC-V GNU Toolchain
+https://github.com/riscv-collab/riscv-gnu-toolchain[RISC-V GNU Toolchain]は
+RISC-Vのクロスコンパイラです．
+
+=== Build
+ビルド方法を説明します．
+
+[NOTE]
+====
+研究室のサーバーを利用する場合は `/tools/cad/riscv/rv32ima/bin` にあるので，ビルドする必要はありません．
+====
+
+ソースコードは
+https://github.com/riscv-non-isa/tg-nexus-trace[GitHub]
+で公開されています．
+```
+$ git clone https://github.com/riscv/riscv-gnu-toolchain
+```
+
+configureで使いたいRISC-VのアーキテクチャとABIを選択します．
+例えば，RV32IMを使用したい場合は次のようなオプションを指定します．
+```
+--with-arch=rv32im --with-abi=ilp32
+```
+
+LINUXを動作させるようなプロセッサを使用する場合は，
+```
+--with-arch=rv32ima_Zicsr_Zifencei_Zicntr --with-abi=ilp32
+```
+を使用します．
+
+記述全体は次のようになります．
+```
+$ ./configure --prefix=/home/fujino/rv32im --with-arch=rv32im --with-abi=ilp32
+$ make -j $(nproc)
+```
+だいたい，5分から10分程度で終わります．
+ビルドが完了すると `/home/fujino/rv32im/bin` に
+`riscv32-unknown-elf-` から始まるコンパイラが生成されています．
+
+[WARNING]
+====
+`j` オプションを使うとエラーを見落とすことがあります．
+`riscv32-unknown-elf-g++` がないとかライブラリが見つからないなどの問題があったら，
+失敗しています．
+この場合は，シングルスレッドで実行してみてください．
+時間はかかりますが，確実です．
+====
+
+=== Useage
+使い方はx86のgccとあまり変わらないです．
+<<gcc>>を次にまとめました．
+
+[[gcc]]
+.よく使うオプション
+[cols="2*", options="header"]
+|====
+|Option
+|Describe
+
+|-march
+|生成する命令セットを指定します． 
+アーキテクチャが`RV32IMA_Zicsr` の場合， `-march=rv32ima_zicsr` のように指定します．
+
+|-mabi
+|ABIを指定します． `-mabi=ilp32` 以外使うことはないかと思います．
+
+|-nostartfiles
+|エントリーポイント `_start` をユーザー定義のものに変更します．
+このオプションなしで，初期化ルーチンをリンクすると，標準ライブラリの `_start` と衝突します．
+
+|-O
+|最適化オプションです． `-Os` か `-O2` を使うことが多いです．
+
+|-T
+|リンカを指定します． `-Tsrc/link.ld` のように使います．
+|====

@@ -1,0 +1,79 @@
+== Verilator
+シミュレーションには
+https://github.com/verilator/verilator[Verilator]
+を使うことが多いです．
+次のコマンドでインストールできます．
+```
+sudo apt install verilator
+```
+[WARNING]
+====
+Ubuntu 24.04以前を使っていると，aptは古いverilatorをインストールします．
+最新の版はビルドが必要です．
+この古いverilatorでは後述する `--binary` オプションが使えません．
+====
+
+=== Build
+
+[NOTE]
+====
+研究室のサーバーを利用する場合は `/tools/cad/bin/verilator` にあるので，ビルドする必要はありません．
+====
+
+ソースコードは
+https://github.com/verilator/verilator[GitHub]
+で公開されています．
+```
+$ git clone https://github.com/verilator/verilator -b v5.036
+$ cd verilator
+$ autoconf
+$ ./configure
+$ make -j $(nproc)
+```
+
+`verilator/build/bin` にverilatorが生成されます．
+
+=== Usage
+https://veripool.org/guide/latest/exe_verilator.html[使えるオプション]
+はたくさんありますが，<<verilator>>をまとめておきます．
+
+[[verilator]]
+.よく使うオプション
+[cols="2*", options="header"]
+|===
+|option
+|desctiption
+
+|--binary
+|実行可能ファイルを生成するオプションです．
+
+|--trace
+|`$dumpvars` を使いたいときは追加します．
+
+|--top < _module name_ >
+|階層の一番上のモジュール名を指定します．
+
+|-Wno-WIDTHEXPAND
+|幅の違うwireをつなげるとwarningが表示されるので無効にします．
+
+|--timing
+|`initial forever \#5 clk <= ~clk;` のような遅延記述を使う場合はこのオプションが必要です．
+
+|-I< _dirname_ >
+|verilogで ``include` を使用している場合，ヘッダーのあるディレクトリを指定します．
+|===
+
+`top.v` にテストベンチを記述しているとすると，次のように記述します．
+```
+$ verilator --binary --trace -Isrc --top top \
+      -Wno-WIDTHEXPAND --timing src/top.v
+```
+
+実行可能ファイルは `obj_dir/Vtop` になります．
+`./obj_dir/Vtop +memfile=/fujino/home/addi.mem`
+のような記述で，引数を与えることが可能で，
+```
+string str;
+initial $value$plusargs("memfile=%s", str);
+```
+というように，テストベンチ側で受け取ることができます．

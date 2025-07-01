@@ -1,0 +1,106 @@
+== RISC-V Technical Specifications
+https://riscv.org/specifications/ratified/[RISC-V Ratified Specifications]
+はRISC-Vの内容が確定した仕様書です.
+
+=== The RISC-V Instruction Set Manual Volume I: Unprivileged ISA
+最も基本的なのは，
+https://drive.google.com/file/d/1uviu1nH-tScFfgrovvFCrj7Omv8tFtkp/view?usp=drive_link[The RISC-V Instruction Set Manual Volume I: Unprivileged ISA]
+だと思います．
+ここにRISC-V ISAの基礎が書いてあります.
+全部読む意味はあまりないと思いますが，
+*Chapter 2. RV32I Base Integer Instruction Set, Version 2.1*
+ぐらいは目を通しておくとよいかもしれません.
+また，
+*Chapter 35. RV32/64G Instruction Set Listings*
+の命令一覧はプロセッサの実装の際に非常に役に立ちます．
+
+RISC-Vは基本整数命令セットとして，
+RV32I, RV32E, RV64E, RV64Iの中から1つ選ぶ必要があります.
+これらを同時に選択することはできません．
+多くのプロジェクトではRV32IかRV64Iが使用されている印象です.
+Eは省電力向けの仕様ですが，あまり見たことないです.
+そもそも，後述のABIがDraftの段階です．
+
+これらの基本整数命令セットに好きな拡張命令を追加できるようにRISC-Vは設計されています.
+例えばM拡張は乗算/除算命令ですが，これを追加するとプロセッサはRV32IMと表されます.
+<<extension>>を表にまとめました．
+
+[[extension]]
+.よく見る拡張命令
+[cols="2*", options="header"]
+|===
+|Extension
+|desctiption
+
+|Zicsr
+|CSRレジスタを操作するための拡張命令です．CSRを実装しないなら必要ありません．
+
+|M
+|整数乗算除算用の拡張命令です．
+
+|A
+|アトミック命令の拡張命令です．排他制御を実現します．
+
+|F
+|単精度浮動小数演算の拡張命令です．
+
+|D
+|倍精度浮動小数演算の拡張命令です．
+
+|C
+|圧縮命令です．addやswが16ビットで表現できる拡張命令です．
+
+|V
+|ベクトル拡張命令です．
+|===
+
+=== RISC-V ABIs Specification
+https://drive.google.com/file/d/1Ja_Tpp_5Me583CGVD-BIZMlgGBnlKU4R/view?usp=drive_link[RISC-V ABIs Specification]
+も知っておくと良いかもしれません．
+RISC-VのABI (Application Binary Interface) は，
+コンパイルされたプログラムが正しく動作するための様々な規約を定めています．
+その中でも特に重要なのが，データ型のサイズや関数呼び出し時のレジスタの使い方です．
+<<abi>>をまとめましたが， `ILP32` 以外を使うことはないと思います．
+
+[[abi]]
+.現在定義されているABI
+[cols="2*", options="header"]
+|===
+|ABI
+|desctiption
+
+|ILP32
+|RV32IのABI．Integer, Long, Pointerが32ビットになります．
+
+|ILP32F
+|F拡張をサポートするRV32IのABI．
+
+|ILP32D
+|D拡張をサポートするRV32IのABI．
+
+|ILP32E
+|RV32EのABI．まだDraft．（RV32EはRatified）
+
+|LP64
+|RV64IのABI．Long, Pointerが64ビットになります．
+
+|LP64F
+|F拡張をサポートするRV64IのABI．
+
+|LP64D
+|D拡張をサポートするRV64IのABI．
+
+|LP64Q
+|Q拡張をサポートするRV64IのABI．
+|===
+
+=== RISC-V N-Trace (Nexus-based Trace)/Efficient Trace for RISC-V
+https://github.com/riscv-non-isa/tg-nexus-trace[N-Trace]
+と
+https://github.com/riscv-non-isa/riscv-trace-spec[E-Trace]
+知っておくと良いかもしれません．
+これらは，RISC-Vプロセッサのプログラムカウンタの系列をトレースするための仕様書です．
+例えば，100MHzのプロセッサがあるとすると，毎秒100,000,000回PCが変化します．
+RV32IのPCは32ビットなので，これをそのまま送信すると，400MByte/sのトラフィックが発生します．
+この莫大なトラフィックを軽減することを目的とした仕様書がこの2つです．
+これを使うと酷くても1命令1ビット程度まで圧縮できます．
