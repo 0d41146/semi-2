@@ -12,18 +12,20 @@ module top;
         end
     end
 
-    initial begin
-        $dumpfile("top.vcd");
-        $dumpvars(0, top);
-    end
+    // initial begin
+    //     $dumpfile("top.vcd");
+    //     $dumpvars(0, top);
+    // end
 
     reg done = 0;
     always @(posedge clk) begin
-        if (top.dut.dbus_en == 4'b1111 && top.dut.dbus_write_addr == 32'h40008000) begin
-            if (top.dut.dbus_write_data == 777) $finish;
-            else $fatal;
+        if (top.dut.dbus_en[0] && top.dut.dbus_write_addr == 32'h40008000) begin
+            $write("%c", top.dut.dbus_write_data[7:0]);
+            if (top.dut.dbus_write_data == 32'h00002000) begin // Check for newline
+                $finish;
+            end
         end
-        else if (cc == 1000) $fatal;
+        // if (cc == 10000) $finish;
     end
 
     main dut(

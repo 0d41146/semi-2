@@ -66,9 +66,6 @@ module rv32i (
             BLT      :begin if ($signed(xreg[rs1]) < $signed(xreg[rs2])) npc = branch_target; end
             BLTU     :begin if (xreg[rs1] < xreg[rs2]) npc = branch_target; end
             BNE      :begin if (xreg[rs1] != xreg[rs2]) npc = branch_target; end
-            EBREAK   :begin $display("NOT SUPPORTED!"); end
-            ECALL    :begin $display("NOT SUPPORTED!"); end
-            FENCE    :begin $display("NOT SUPPORTED!"); end
             JAL      :begin xreg_en=1; xreg_write_data = pc+4; npc = jump_target; end
             JALR     :begin xreg_en=1; xreg_write_data = pc+4; npc = (xreg[rs1] + i_imm) & ~32'b1; end
             LB       :begin xreg_en=1; xreg_write_data = {{24{dbus_read_data[7]}}, dbus_read_data[7:0]}; end
@@ -95,7 +92,7 @@ module rv32i (
             SW       :begin dbus_en=15;dbus_write_data = xreg[rs2]; end
             XOR      :begin xreg_en=1; xreg_write_data = xreg[rs1] ^ xreg[rs2]; end
             XORI     :begin xreg_en=1; xreg_write_data = xreg[rs1] ^ i_imm; end
-            default   :begin $display("Unknown instruction: %h", insn); end
+            default  :begin $display("Unknown instruction: 0x%h", opcode); $finish; end
         endcase
     end
 endmodule
