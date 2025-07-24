@@ -1,6 +1,6 @@
 module top;
-    reg clk = 1; initial forever #5 clk = ~clk; // 100MHz clock
-    reg [63:0] cc = 0; always @(posedge clk) cc <= cc+1; // clock cycle counter
+    reg        clk = 1; initial forever #5 clk = ~clk; // 100MHz clock
+    reg [63:0] cc  = 0; always @(posedge clk) cc <= cc+1; // clock cycle counter
 
     string hex_file;
     initial begin

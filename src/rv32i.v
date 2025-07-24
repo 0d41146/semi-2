@@ -1,26 +1,33 @@
 module rv32i (
-    input wire clk_i,
+    input  wire        clk_i,
     output wire [31:0] ibus_addr_o,
-    input wire [31:0] ibus_data_i,
-    output wire [3:0] dbus_en_o,
+    input  wire [31:0] ibus_data_i,
+    output wire  [3:0] dbus_en_o,
     output wire [31:0] dbus_write_addr_o,
     output wire [31:0] dbus_read_addr_o,
     output wire [31:0] dbus_write_data_o,
-    input wire [31:0] dbus_read_data_i
+    input  wire [31:0] dbus_read_data_i
 );
+    `include "riscv.vh"
+
+    // Real registers
+    reg [31:0] xreg [0:31];
     reg [31:0] pc = 0;
-    reg [31:0] xreg [0:31]; integer i; initial for (i = 0; i < 32; i = i + 1) xreg[i] = 0;
-    assign ibus_addr_o = pc;
-    
 
-    wire [31:0] insn = ibus_data_i;
+    // Used as a wire
+    reg [31:0] npc;
+    reg        xreg_en;
+    reg [31:0] xreg_write_data;
+    reg  [3:0] dbus_en;
+    reg [31:0] dbus_write_data;
 
-    wire [6:0] opcode = insn[6:0];
-    wire [4:0] rd = insn[11:7];
-    wire [2:0] funct3 = insn[14:12];
-    wire [4:0] rs1 = insn[19:15];
-    wire [4:0] rs2 = insn[24:20];
-    wire [6:0] funct7 = insn[31:25];
+    wire [31:0] insn   = ibus_data_i;
+    wire  [6:0] opcode = insn[6:0];
+    wire  [4:0] rd     = insn[11:7];
+    wire  [2:0] funct3 = insn[14:12];
+    wire  [4:0] rs1    = insn[19:15];
+    wire  [4:0] rs2    = insn[24:20];
+    wire  [6:0] funct7 = insn[31:25];
 
     wire [31:0] i_imm = {{20{insn[31]}}, insn[31:20]};
     wire [31:0] s_imm = {{20{insn[31]}}, insn[31:25], insn[11:7]};
@@ -29,12 +36,14 @@ module rv32i (
     wire [31:0] j_imm = {{11{insn[31]}}, insn[31], insn[19:12], insn[20], insn[30:21], 1'b0};
 
     wire [31:0] branch_target = pc + b_imm;
-    wire [31:0] jump_target = pc + j_imm;
+    wire [31:0] jump_target   = pc + j_imm;
 
     wire [31:0] dbus_read_data = dbus_read_data_i;
-    assign dbus_en_o = dbus_en;
+
+    assign ibus_addr_o       = pc;
+    assign dbus_en_o         = dbus_en;
     assign dbus_write_addr_o = xreg[rs1] + s_imm;
-    assign dbus_read_addr_o = xreg[rs1] + i_imm;
+    assign dbus_read_addr_o  = xreg[rs1] + i_imm;
     assign dbus_write_data_o = dbus_write_data;
 
     always @(posedge clk_i) begin
@@ -42,17 +51,11 @@ module rv32i (
         if (xreg_en && rd != 0) xreg[rd] <= xreg_write_data;
     end
 
-    reg [31:0] npc;
-    reg xreg_en;
-    reg [31:0] xreg_write_data;
-    reg [3:0] dbus_en;
-    reg [31:0] dbus_write_data;
-    `include "riscv.vh"
     always @(*) begin
-        npc = pc + 4;
-        xreg_en = 0;
+        npc             = pc + 4;
+        xreg_en         = 0;
         xreg_write_data = 0;
-        dbus_en = 0;
+        dbus_en         = 0;
         dbus_write_data = 0;
         casez(insn)
             ADD      :begin xreg_en=1; xreg_write_data = xreg[rs1] + xreg[rs2]; end
