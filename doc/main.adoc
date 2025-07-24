@@ -1,14 +1,17 @@
 = 第2回勉強会  
 :doctype: book
 :toclevels: 1
-研究室でよく使うツールの使い方
-2025-07-11
+RISC-Vのプロジェクトについて
+2025-07-24
 
 :chapter-refsig: Chapter
 :section-refsig: Section
 :icons: font
 :table-caption: 表
 :figure-caption: 図
+
+== Preamble
+RISC-Vのプロセッサを設計する際に必要となるであろうプロジェクトについて説明をしていきます．
 
 include::spec.adoc[]
 
@@ -18,226 +21,7 @@ include::verilator.adoc[]
 
 include::tests.adoc[]
 
-
-== CoreMark
-https://github.com/eembc/coremark[CoreMark]はプロセッサの性能を検証するためのベンチマーク
-プログラムです．
-自分の設計したプロセッサの性能を確かめたくなったらまずはCoremarkです.
-プロセッサの性能を測定することができます．
-
-
-=== How to Use
-GitHubで公開されています．
-クローンしましょう．
-
-```
-$ git clone https://github.com/eembc/coremark
-```
-
-`coremark.md5` のハッシュ値と一致させなけらばならないファイルがあります．
-当然これらは変更が許されていません．
-他は自由に変更できます．
-とりあえず，我々が独自のアーキテクチャ向けに変更しなければならないのは，
-`barebones` ディレクトリ内のファイルです．
-他のディレクトリは使わないです．
-
-
-[cols="2*", options="header"]
-|===
-|file
-|desctiption
-
-|core_portme.c
-|時間とか測定する関数です．
-
-|core_portme.h
-|size_tを使っていて怒られるので， `ee_u32` に変更します．
-
-|core_portme.mak
-|Makefileです．ベアメタルルーチン固有のリンカディスクリプタや初期化ルーチンを使用する場合，使いにくいのでいりません．
-
-|cvt.c
-|なにかわかりませんが使わないとバグります．
-
-|ee_printf.c
-|ベンチマーク固有の文字の表示先を指定するための関数が定義されています．
-|===
-
-=== ビルドしよう
-ビルドしましょう．
-
-=== core_portme.c
-まず `barebones_clock()` です．
-この関数からベンチマークの実行に何クロックサイクル要したか，取得できるようにしてあげます．
-今回はとりあえず `0x80000000` から取得できるようにしてあげます．
-
-実装はこんな感じでしょうか．
-```
-CORETIMETYPE
-barebones_clock()
-{
-    unsigned int cycle_low, cycle_high;
-    cycle_low = *((unsigned int*)0x80000000);
-    cycle_high = *((unsigned int*)0x80000004);
-    return (CORETIMETYPE)((((unsigned long long)cycle_high) << 32) 
-                          | cycle_low);
-}
-```
-
-あと，ちょうど繰り上がった瞬間にcycle_highをキャプチャすると最悪なので，
-タイマーを `0x80000008` で制御できるようにします．
-とりあえず，0ストップ，1スタートでいいでしょうか．
-
-```
-/* Function : start_time
-        This function will be called right before starting the timed portion of
-   the benchmark.
-
-        Implementation may be capturing a system timer (as implemented in the
-   example code) or zeroing some system parameters - e.g. setting the cpu clocks
-   cycles to 0.
-*/
-void
-start_time(void)
-{
-    GETMYTIME(&start_time_val);
-    *(int*)0x80000008 = 0;
-}
-/* Function : stop_time
-        This function will be called right after ending the timed portion of the
-   benchmark.
-
-        Implementation may be capturing a system timer (as implemented in the
-   example code) or other system parameters - e.g. reading the current value of
-   cpu cycles counter.
-*/
-void
-stop_time(void)
-{
-    *(int*)0x80000008 = 1;
-    GETMYTIME(&stop_time_val);
-}
-```
-
-タイマーのリセットは初期化ルーチンでやってしまいます．
-```
-void
-portable_init(core_portable *p, int *argc, char *argv[])
-{
-    *(int *)0x80000008 = 0;
-    *(int *)0x80000000 = 0;
-    *(int *)0x80000004 = 0;
-```
-こんな感じでタイマーはよいかと．
-
-=== core_portme.h
-なぜか `size_t` が怒られるので，次に変更します．
-```
-typedef ee_u32         ee_size_t;
-```
-
-あと，ここでオプションをたくさん設定します．
-大変です．
-[cols="2*", options="header"]
-|===
-|define
-|desctiption
-
-|HAS_FLOAT
-|浮動小数演算をサポートしていたら1にします．もちろん0です．
-
-|HAS_TIME_H
-|`time.h` をサポートしていたら1します．もちろん0です．
-
-|USE_CLOCK
-|`time.h` をサポートしていたら1します．もちろん0です．
-
-|HAS_STDIO
-|`stdio.h` をサポートしていたら1にします．もちろん0です．
-
-|HAS_PRINTF
-|`stdio.h` をサポートしていたら1にします．もちろん0です．
-|===
-
-
-
-
-=== ee_printf.c
-`uart_send_char()` なる関数を定義しなければなりません．
-とりあえずuartは0x40008000でいいですかね．
-```
-void
-uart_send_char(char c)
-{
-    *(char *)0x40008000 = c;
-}
-```
-
-これで完成です．
-コンパイルしましょう．
-リンカはさっきのを使います．
-初期化ルーチンはレジスタリセットだけで良いでしょう．
-
-ここで次の定数をdefineしてあげる必要があります．
-[cols="2*", options="header"]
-|===
-|define
-|desctiption
-
-|FLAGS_STR
-|どんなオプションでコンパイルしたのか，ベンチマークの結果に表示してくれます
-
-|ITERATIONS
-|何回カーネルを回すか指定します．10秒以上かかる回数にしないと怒られます．
-
-|CLOCKS_PER_SEC
-|1秒当たりのクロック数を教えてあげることで，実時間と対応が取れるようになります．
-|===
-
-以上を踏まえるとこんな感じです．
-ここでは25MHzでプロセッサが動作すると仮定しています（ちゃんと確かめていません）．
-最適化オプション使ってもOKです．
-```
-cmark:
-	mkdir -p cmark
-	riscv32-unknown-elf-gcc -O2 -static -nostartfiles -mcmodel=medany \
-	-march=rv32i -mabi=ilp32 \
-	-Tcoremark/link.ld -Icoremark -o cmark/coremark.elf \
-	-DFLAGS_STR=\""-O2 -static -nostartfiles"\" \
-	-DITERATIONS=1000 -DCLOCKS_PER_SEC=25000000 \
-	coremark/*.c coremark/crt0.S
-	riscv32-unknown-elf-objcopy -O verilog cmark/coremark.elf cmark/coremark.hex
-	riscv32-unknown-elf-objdump -D cmark/coremark.elf > cmark/coremark.dump
-```
-
-実行するとこんな感じの出力が得られます．
-```
-2K performance run parameters for coremark.
-CoreMark Size    : 666
-Total ticks      : 720276619
-Total time (secs): 28
-Iterations/Sec   : 35
-Iterations       : 1000
-Compiler version : GCC15.1.0
-Compiler flags   : -O2 -static -nostartfiles
-Memory location  : STACK
-seedcrc          : 0xe9f5
-[0]crclist       : 0xe714
-[0]crcmatrix     : 0x1fd7
-[0]crcstate      : 0x8e3a
-[0]crcfinal      : 0xd340
-Correct operation validated. See README.md for run and reporting rules.
-```
-
-CoreMarkのスコアになるのは， `Iterations/Sec` です.
-ここでは，35になっています．
-めちゃくちゃ低いです．
-普通に使うなら500は超えたいところです．
-
-
-== Embench
-https://github.com/embench/embench-iot[Embench]
-はタスク別のプロセッサの性能を調査するベンチマークです.
+include::cmark.adoc[]
 
 == Spike
 https://github.com/riscv-software-src/riscv-isa-sim[Spike]
@@ -258,7 +42,6 @@ make install
 [WARNING]
 ====
 古すぎてReleasesが使用できません．
-終わってます．
 masterブランチをクローンしましょう．
 ====
 
@@ -299,9 +82,6 @@ https://shmknrk.hatenablog.com/entry/2024/12/01/175405[ログ]
 もあります．
 ====
 
-
-
-
 == RISC-V Opcodes
 https://github.com/riscv/riscv-opcodes[RISC-V Opcodes]
 はRISC-Vのdefineを生成してくれるので便利．
@@ -311,9 +91,3 @@ make EXTENSIONS='rv_i rv32_i'
 ```
 でRV32Iの命令をすべて生成できる．
 そんなに使う機会はないけど，Verilogのlocalparamとかtexの表とか自動で生成してくれるので便利．
-
-
-== Vivado
-めちゃくちゃよく使います．
-
-

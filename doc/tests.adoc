@@ -76,7 +76,7 @@ _start:                             \
 実装は次のようになります．
 ```
 #define RVTEST_PASS                                                     \
-        lui t0, 0x40008;                                                  \
+        lui t0, 0x40008;                                                \
         li t1, 777;                                                     \
         sw t1, 0(t0);                                                   \
 1:      j 1b;                                                           
@@ -84,7 +84,7 @@ _start:                             \
 
 ```
 #define RVTEST_FAIL                                                     \
-        lui t0, 0x40008;                                                  \
+        lui t0, 0x40008;                                                \
         li t1, 0;                                                       \
         sw t1, 0(t0);                                                   \
 1:      j 1b;                                                           
@@ -149,9 +149,9 @@ hex: tests
 今回はバイトアライメントされたメモリを想定しています．
 ワードアライメントの場合は次の方法を使う方が確実です．
 ```
-riscv32-unknown-elf-objcopy -O binary main.elf main.bin
-dd if=main.bin of=mem.bin conv=sync bs=1KB
-hexdump -v -e '1/4 "%08x\n"' main.bin > main.hex
+$ riscv32-unknown-elf-objcopy -O binary main.elf main.bin
+$ dd if=main.bin of=mem.bin conv=sync bs=1KB
+$ hexdump -v -e '1/4 "%08x\n"' main.bin > main.hex
 ```
 ====
 

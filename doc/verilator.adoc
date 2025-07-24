@@ -2,7 +2,8 @@
 シミュレーションには
 https://github.com/verilator/verilator[Verilator]
 を使うことが多いです．
-次のコマンドでインストールできます．
+高速で，波形が見れるのでVivado付属のXSIMよりこっちが便利です．
+`apt` でインストールできます．
 ```
 sudo apt install verilator
 ```
@@ -11,13 +12,15 @@ sudo apt install verilator
 Ubuntu 24.04以前を使っていると，aptは古いverilatorをインストールします．
 最新の版はビルドが必要です．
 この古いverilatorでは後述する `--binary` オプションが使えません．
+また，`always \#5 clk = ~clk;` といった `#` を使った記述をサポートしていないので，
+テストベンチをCで記述する必要があります．
 ====
 
 === Build
 
 [NOTE]
 ====
-研究室のサーバーを利用する場合は `/tools/cad/bin/verilator` にあるので，ビルドする必要はありません．
+研究室のサーバーを利用する場合は `/tools/cad/bin/verilator` があるので，ビルドする必要はありません．
 ====
 
 ソースコードは
@@ -36,6 +39,7 @@ $ make -j $(nproc)
 === Usage
 https://veripool.org/guide/latest/exe_verilator.html[使えるオプション]
 はたくさんありますが，<<verilator>>をまとめておきます．
+VerilatorはWarningが厳しすぎてすぐコンパイルを中止するので， `-Wno-` 系のオプションをめちゃくちゃ使います．
 
 [[verilator]]
 .よく使うオプション

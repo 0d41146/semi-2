@@ -7,7 +7,7 @@ RISC-Vのクロスコンパイラです．
 
 [NOTE]
 ====
-研究室のサーバーを利用する場合は `/tools/cad/riscv/rv32ima/bin` にあるので，ビルドする必要はありません．
+研究室のサーバーを利用する場合は `/tools/cad/riscv/rv32ima` にあるので，ビルドする必要はありません．
 ====
 
 ソースコードは
@@ -22,12 +22,14 @@ configureで使いたいRISC-VのアーキテクチャとABIを選択します�
 ```
 --with-arch=rv32im --with-abi=ilp32
 ```
-
+[TIP]
+====
 LINUXを動作させるようなプロセッサを使用する場合は，
 ```
 --with-arch=rv32ima_Zicsr_Zifencei_Zicntr --with-abi=ilp32
 ```
 を使用します．
+====
 
 記述全体は次のようになります．
 ```
@@ -60,7 +62,7 @@ $ make -j $(nproc)
 
 |-march
 |生成する命令セットを指定します． 
-アーキテクチャが`RV32IMA_Zicsr` の場合， `-march=rv32ima_zicsr` のように指定します．
+アーキテクチャが `RV32IMA_Zicsr` の場合， `-march=rv32ima_zicsr` のように指定します．
 
 |-mabi
 |ABIを指定します． `-mabi=ilp32` 以外使うことはないかと思います．
@@ -75,3 +77,34 @@ $ make -j $(nproc)
 |-T
 |リンカを指定します． `-Tsrc/link.ld` のように使います．
 |====
+
+CFU Proving Groundでは次のようにコンパイルしています．
+```
+$ riscv32-unknown-elf-gcc -Os -march=rv32im -mabi=ilp32 -nostartfiles -Iapp -Tapp/link.ld -o build/main.elf app/crt0.s app/*.c *.c 
+```
+[cols="2*", options="header"]
+|====
+|Option
+|Describe
+
+|-Os
+|生成する実行可能ファイルのサイズを最小化する方向に最適化します．
+
+|-march=rv32im
+|RVProcがサポートするISAはRV32IMです．
+
+|-nostartfiles
+|RVProcは `crt0.s` から命令を実行したいので，GCC標準のスタートアップルーチンを生成しないオプションです．
+このオプションを使用する場合は，リンカに `_start` というエントリを教える必要があります．
+RVProcはこれを，`crt0.s` で行っています．
+
+|-Iapp
+|インクルードするヘッダーを `./app` ディレクトリから探してくれというオプションです．
+
+|-Tapp/link.ld
+|リンカを指定します．ここでは `./app/link.ld` を指定しています．
+
+|-o build/main.elf
+|出力先を指定します．
+|====
+

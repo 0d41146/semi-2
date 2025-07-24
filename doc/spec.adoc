@@ -1,6 +1,6 @@
 == RISC-V Technical Specifications
 https://riscv.org/specifications/ratified/[RISC-V Ratified Specifications]
-はRISC-Vの内容が確定した仕様書です.
+からRISC-Vの内容が確定した仕様書を閲覧することができます.
 
 === The RISC-V Instruction Set Manual Volume I: Unprivileged ISA
 最も基本的なのは，
@@ -58,7 +58,7 @@ Eは省電力向けの仕様ですが，あまり見たことないです.
 https://drive.google.com/file/d/1Ja_Tpp_5Me583CGVD-BIZMlgGBnlKU4R/view?usp=drive_link[RISC-V ABIs Specification]
 も知っておくと良いかもしれません．
 RISC-VのABI (Application Binary Interface) は，
-コンパイルされたプログラムが正しく動作するための様々な規約を定めています．
+レジスタの使い方の規約などを定めています（ちゃんと読んだことありません）．
 その中でも特に重要なのが，データ型のサイズや関数呼び出し時のレジスタの使い方です．
 <<abi>>をまとめましたが， `ILP32` 以外を使うことはないと思います．
 
