@@ -1,0 +1,93 @@
+= 第2回勉強会  
+:doctype: book
+:toclevels: 1
+RISC-Vのプロジェクトについて
+2025-07-24
+
+:chapter-refsig: Chapter
+:section-refsig: Section
+:icons: font
+:table-caption: 表
+:figure-caption: 図
+
+== Preamble
+RISC-Vのプロセッサを設計する際に必要となるであろうプロジェクトについて説明をしていきます．
+
+include::spec.adoc[]
+
+include::gcc.adoc[]
+
+include::verilator.adoc[]
+
+include::tests.adoc[]
+
+include::cmark.adoc[]
+
+== Spike
+https://github.com/riscv-software-src/riscv-isa-sim[Spike]
+RISC-Vのシミュレータです.
+RISC-VのELFファイルを実行することができます．
+
+```
+git clone https://github.com/riscv-software-src/riscv-isa-sim
+cd riscv-isa-sim
+mkdir build
+cd build
+../configure --prefix=/home/fujino/riscv-sim
+make -j $(nproc)
+make install
+```
+すると `--prefix` で指定したディレクトリに `spike` が生成されます．
+
+[WARNING]
+====
+古すぎてReleasesが使用できません．
+masterブランチをクローンしましょう．
+====
+
+proxy kernalというELFを実行する環境も必要です．
+ビルドしていきます．
+```
+$ git clone https://github.com/riscv-software-src/riscv-pk
+$ mkdir build
+$ cd build
+$ ../configure --prefix=/home/fujino/rv32i --host=riscv32-unknown-elf --with-arch=rv32i_zicsr_zifencei --with-abi=ilp32
+$ make
+$ make install
+```
+
+Hello, World!してみます．
+```
+int main() {
+    printf("Hello, Spike!\n");
+    return 0;
+}
+```
+
+コマンドはこうです．
+```
+riscv32-unknown-elf-gcc main.c -o main
+spike --isa=rv32i /home/fujino/rv32i/riscv32-unknown-elf/bin/pk main
+```
+
+
+```
+Hello, Spike!
+```
+
+[TIP]
+====
+我々の先輩がSpike上でLinuxを動かしたときの
+https://shmknrk.hatenablog.com/entry/2024/12/01/175405[ログ]
+もあります．
+====
+
+== RISC-V Opcodes
+https://github.com/riscv/riscv-opcodes[RISC-V Opcodes]
+はRISC-Vのdefineを生成してくれるので便利．
+
+```
+make EXTENSIONS='rv_i rv32_i'
+```
+でRV32Iの命令をすべて生成できる．
+そんなに使う機会はないけど，Verilogのlocalparamとかtexの表とか自動で生成してくれるので便利．

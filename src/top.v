@@ -12,11 +12,6 @@ module top;
         end
     end
 
-    // initial begin
-    //     $dumpfile("top.vcd");
-    //     $dumpvars(0, top);
-    // end
-
     reg done = 0;
     always @(posedge clk) begin
         if (top.dut.dbus_en==4'hf && top.dut.dbus_write_addr == 32'h40008000) begin
