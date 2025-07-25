@@ -19,13 +19,13 @@ module top;
 
     reg done = 0;
     always @(posedge clk) begin
-        if (top.dut.dbus_en[0] && top.dut.dbus_write_addr == 32'h40008000) begin
-            $write("%c", top.dut.dbus_write_data[7:0]);
-            if (top.dut.dbus_write_data == 32'h00002000) begin // Check for newline
+        if (top.dut.dbus_en==4'hf && top.dut.dbus_write_addr == 32'h40008000) begin
+            if (top.dut.dbus_write_data == 32'h777) begin
                 $finish;
+            end else begin
+                $fatal;
             end
         end
-        // if (cc == 10000) $finish;
     end
 
     main dut(
