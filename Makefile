@@ -1,4 +1,4 @@
-.PHONY: all doc build tests valid clean cmark
+.PHONY: all setup hex build valid doc cmark cmark-run clean
 
 all: build valid
 
@@ -23,9 +23,6 @@ valid:
 		fi; \
 	done
 
-run: build
-	./obj_dir/Vtop +hex_file=tests/rv32ui-p-lb.hex
-
 doc: 
 	asciidoctor-pdf \
 	  -a toc \
@@ -48,7 +45,6 @@ cmark:
 
 cmark-run: cmark
 	./obj_dir/Vtop +hex_file=cmark/coremark.hex
-
 
 clean:
 	rm -rf obj_dir
