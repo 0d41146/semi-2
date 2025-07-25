@@ -7,33 +7,9 @@ MEMORY {
 
 SECTIONS
 {
-    .text : {
-        *(.text.init)
-        *(.text.*)
-        *(.text)
-    } > ram
-
-    .data : {
-        *(.data.*)
-        *(.sdata*)
-        *(.data)
-    } > ram
-    
-    .rodata : {
-        *(.rodata.*)
-        *(.srodata.*)
-        *(.rodata)
-    } > ram
-
-    .bss : {
-        *(.bss.*)
-        *(.sbss)
-        *(.bss)
-        *(COMMON)
-        _end = .;
-    } > ram
-
-    /DISCARD/ : {
-        *(.debug*)
-    }
+  .text.init : { *(.text.init) } > ram
+  .text : { *(.text) } > ram
+  .data : { *(.data) } > ram
+  .bss : { *(.bss) } > ram
+  _end = .;
 }
