@@ -2,6 +2,10 @@
 
 all: build valid
 
+setup:
+	git submodule update --init --recursive
+	cd riscv-tests && autoconf
+
 build:
 	verilator --binary --trace -Isrc -top top -Wno-WIDTHEXPAND --timing src/top.v
 
