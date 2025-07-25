@@ -6,7 +6,7 @@
 
 `configure`でビルド用の`Makefile`を生成する．
 ```bash
-./configure --prefix=/home/fujino/proj/tmp/semi-2 --with-xlen=32
+$ ./configure --prefix=/home/fujino/proj/tmp/semi-2 --with-xlen=32
 ```
 
 生成された`Makefile`も修正する．
@@ -52,9 +52,9 @@ $(1)_tests += $$($(1)_p_tests)
 `share/riscv-tests/isa`のみ取り出してプロジェクトのルートに置く（プロジェクトのMakefileがそうなっているので）．
 次のルールで，hexファイル，シミュレーションモデル，検証をスタートする．
 ```bash
-make hex
-make build
-make valid
+$ make hex
+$ make build
+$ make valid
 ```
 全部PASSすればOK.
 
