@@ -27,10 +27,10 @@ doc:
 	asciidoctor-pdf \
 	  -a toc \
 	  -a compress \
-	  -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
+	  -a pdf-theme=theme/riscv-pdf.yml \
 	  -a pdf-fontsdir=docs-resources/fonts \
 	  -a scripts=cjk \
-	  -o main.pdf doc/main.adoc
+	  -o main.pdf docs/main.adoc
 
 cmark:
 	mkdir -p cmark
@@ -47,4 +47,4 @@ cmark-run: cmark
 	./obj_dir/Vtop +hex_file=cmark/coremark.hex
 
 clean:
-	rm -rf obj_dir
+	rm -rf obj_dir share isa
