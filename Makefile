@@ -6,11 +6,16 @@ setup:
 	git submodule update --init --recursive
 	cd riscv-tests && autoconf
 
+hex:
+	for elf in $(wildcard isa/*.elf); do \
+		riscv32-unknown-elf-objcopy -O verilog $$elf isa/$$(basename $$elf .elf).hex; \
+	done
+
 build:
 	verilator --binary --trace -Isrc -top top -Wno-WIDTHEXPAND --timing src/top.v
 
 valid: 
-	@for file in $(wildcard tests/*.hex); do \
+	@for file in $(wildcard isa/*.hex); do \
 		if ! ./obj_dir/Vtop +hex_file=$$file > /dev/null; then \
 			echo "\033[31m[FAIL] $$file\033[0m"; \
 		else \
@@ -30,11 +35,6 @@ doc:
 	  -a scripts=cjk \
 	  -o main.pdf doc/main.adoc
 
-tests:
-	$(MAKE) -C riscv-tests isa
-	mkdir -p tests
-	cp riscv-tests/isa/rv32ui-p-*.elf tests/
-
 cmark:
 	mkdir -p cmark
 	riscv32-unknown-elf-gcc -O2 -static -nostartfiles -mcmodel=medany \
@@ -49,10 +49,6 @@ cmark:
 cmark-run: cmark
 	./obj_dir/Vtop +hex_file=cmark/coremark.hex
 
-hex: tests
-	for elf in $(wildcard tests/*.elf); do \
-		riscv32-unknown-elf-objcopy -O verilog $$elf tests/$$(basename $$elf .elf).hex; \
-	done
 
 clean:
 	rm -rf obj_dir
