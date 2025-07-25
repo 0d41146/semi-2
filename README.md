@@ -6,7 +6,7 @@
 
 `configure`でビルド用の`Makefile`を生成する．
 ```bash
-$ ./configure --prefix=/home/fujino/proj/tmp/semi-2 --with-xlen=32
+./configure --prefix=/home/fujino/proj/tmp/semi-2 --with-xlen=32
 ```
 
 生成された`Makefile`も修正する．
